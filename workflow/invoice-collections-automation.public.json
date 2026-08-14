@@ -1,0 +1,2139 @@
+{
+  "name": "Invoice Collections Automation — Portfolio Demo",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jsonplaceholder.typicode.com/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Name",
+              "value": "Content-Type"
+            },
+            {
+              "name": "Value",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -688,
+        -144
+      ],
+      "id": "12d450f3-8c5e-4f30-84bf-3da6415582c7",
+      "name": "Deliver Finance Event",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a9136fba-ac46-43ae-b75e-407a8e5d40b6",
+              "name": "success",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "322ad3f6-a265-49e1-9261-90f87d490089",
+              "name": "stage",
+              "value": "finance-delivery",
+              "type": "string"
+            },
+            {
+              "id": "9d68077d-caa7-4e80-beaa-c460a91b3bc1",
+              "name": "eventId",
+              "value": "{{ $('Create Finance Event').item.json.eventId }}",
+              "type": "string"
+            },
+            {
+              "id": "5cec1fd9-6dbb-4309-9a0e-701ca4c7bf56",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "31890b55-2c2c-4713-b65f-1dc228f2c715",
+              "name": "status",
+              "value": "={{ $json.error.status }}",
+              "type": "string"
+            },
+            {
+              "id": "019aaa1e-7c59-46af-816b-606e14220635",
+              "name": "message",
+              "value": "The resource you are requesting could not be found",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -992,
+        192
+      ],
+      "id": "f854cf77-daee-4fc4-85e7-75cbbeaf2f04",
+      "name": "Handle HTTP Failure"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "321a41fe-e1e9-412a-a0a6-b56bf6dedee4",
+              "leftValue": "={{ !$json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -480,
+        -144
+      ],
+      "id": "0b4f2587-1199-4ecb-9cc1-f976f17901a2",
+      "name": "HTTP Succeeded?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a4f5f16a-38f4-4d7d-af64-e5ba4cdd60bb",
+              "leftValue": "={{ [408, 429, 500, 502, 503, 504].includes(Number($json.status)) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -992,
+        480
+      ],
+      "id": "3f958fba-de80-47cf-a42d-97b53e1b00d5",
+      "name": "Should Retry?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "393bfdae-8d8f-45bc-b077-365300a33337",
+              "name": "success",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "3ea6ae57-8970-4726-9fab-e2857629c3e6",
+              "name": "stage",
+              "value": "finance-delivery",
+              "type": "string"
+            },
+            {
+              "id": "327f91d9-839e-4f48-b98d-bca75c2206bf",
+              "name": "retryable",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "4c65deb5-e416-4c0e-964e-d05b80d44efb",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "number"
+            },
+            {
+              "id": "d64e5ef4-60cb-40e4-919e-f7d53f6d8844",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -640,
+        640
+      ],
+      "id": "c673770f-b0af-4875-8116-96137ce8af1a",
+      "name": "Final Delivery Failure"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -640,
+        368
+      ],
+      "id": "702559ea-6c78-45b6-b40b-8f889cb11460",
+      "name": "Wait Before Retry"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d45d2793-0956-44dd-9c01-6a66826182c0",
+              "name": "retryCount",
+              "value": "={{ ($json.retryCount ?? 0) + 1 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -416,
+        368
+      ],
+      "id": "57ec6b5b-e611-459a-aa57-cdbbe34d81c8",
+      "name": "Increment Retry Count"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f243c913-472a-45ca-8f98-009b0cca4f55",
+              "leftValue": "={{ $json.retryCount >= 3 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        368
+      ],
+      "id": "2ada8596-87d7-478e-8368-27f7df1f3054",
+      "name": "Retry Limit Reached?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhooksite.net/not-real",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Name",
+              "value": "content-type"
+            },
+            {
+              "name": "Value",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Create Finance Event').item.json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -416,
+        128
+      ],
+      "id": "24b80856-2592-4210-8bd5-653d5baaab5e",
+      "name": "Retry Finance Delivery",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2fec6e7b-0b0e-48c0-9baa-2bb73a7c92aa",
+              "name": "eventId",
+              "value": "={{ 'evt-' + $now.toMillis() }}",
+              "type": "string"
+            },
+            {
+              "id": "86990baa-be3b-4a77-96c1-c1118d5ae180",
+              "name": "=event",
+              "value": "invoice.created",
+              "type": "string"
+            },
+            {
+              "id": "8a19b3d8-ab34-45e0-999e-3f4615e71f87",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "23ecc5fd-87e2-478f-a2b3-43839d7ea8e1",
+              "name": "source",
+              "value": "invoice-webhook",
+              "type": "string"
+            },
+            {
+              "id": "e3e6dd91-2994-4ae3-8268-d8f4ee417269",
+              "name": "data",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3168,
+        -224
+      ],
+      "id": "b7eeee9c-0656-4602-b4c7-13a32e2bf440",
+      "name": "Create Finance Event"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_INVOICES_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Northstar Accounts Receivable",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_INVOICES_SPREADSHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_INVOICES_SPREADSHEET_ID/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Invoice ID",
+              "lookupValue": "={{ $('Create Finance Event').item.json.data.invoiceId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2944,
+        -224
+      ],
+      "id": "b0f5ee0e-09ed-43a9-973a-524a3f516f9a",
+      "name": "Find Existing Invoice",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "31ab2453-02d9-4fd5-91c3-cad30112212e",
+              "leftValue": "={{ $json[\"Invoice ID\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2720,
+        -384
+      ],
+      "id": "2840ebfb-a836-4335-903d-990638e134c0",
+      "name": "Invoice Already Exists?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_INVOICES_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Northstar Accounts Receivable",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_INVOICES_SPREADSHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_INVOICES_SPREADSHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Invoice ID": "={{ $('Create Finance Event').item.json.data.invoiceId }}",
+            "Created At": "={{ $('Create Finance Event').item.json.timestamp }}",
+            "Customer Name": "={{ $('Create Finance Event').item.json.data.customerName }}",
+            "Billing Email": "={{ $('Create Finance Event').item.json.data.billingEmail }}",
+            "Amount Due": "={{ $('Create Finance Event').item.json.data.amountDue }}",
+            "Currency": "={{ $('Create Finance Event').item.json.data.currency }}",
+            "Payment Terms Days": "={{ $('Create Finance Event').item.json.data.paymentTermsDays }}",
+            "Issued At": "={{ $('Create Finance Event').item.json.data.issuedAt }}",
+            "Due At": "={{ $('Create Finance Event').item.json.data.dueAt }}",
+            "Account Tier": "={{ $('Create Finance Event').item.json.data.accountTier }}",
+            "Sales Owner": "={{ $('Create Finance Event').item.json.data.salesOwner }}",
+            "Event ID": "={{ $('Create Finance Event').item.json.eventId }}",
+            "Payment Status": "={{ $('Create Finance Event').item.json.data.paymentStatus }}",
+            "Priority": "={{ $json.priority }}",
+            "Score": "={{ $json.score }}"
+          },
+          "matchingColumns": [
+            "Invoice ID"
+          ],
+          "schema": [
+            {
+              "id": "Invoice ID",
+              "displayName": "Invoice ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Billing Email",
+              "displayName": "Billing Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Amount Due",
+              "displayName": "Amount Due",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Terms Days",
+              "displayName": "Payment Terms Days",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Issued At",
+              "displayName": "Issued At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Due At",
+              "displayName": "Due At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Account Tier",
+              "displayName": "Account Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sales Owner",
+              "displayName": "Sales Owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Status",
+              "displayName": "Payment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2224,
+        -160
+      ],
+      "id": "78e44ea0-8337-4364-b331-2883d655465b",
+      "name": "Store Invoice"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7162a7a0-4089-47f1-a926-0cd42c9ce670",
+              "name": "score",
+              "value": "={{\n  (\n    Number($('Create Finance Event').item.json.data.amountDue) >= 10000 ? 3 :\n    Number($('Create Finance Event').item.json.data.amountDue) >= 5000 ? 2 :\n    0\n  )\n  +\n  (\n    $('Create Finance Event').item.json.data.accountTier === 'enterprise' ? 2 : 0\n  )\n  +\n  (\n    Number($('Create Finance Event').item.json.data.paymentTermsDays) === 60 ? 1 : 0\n  )\n}}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2704,
+        -160
+      ],
+      "id": "9b84d7c4-129d-4a18-990e-b036619cd061",
+      "name": "Calculate Score"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "160fb421-f05d-4e45-bca9-5fc6a2d713c0",
+              "name": "priority",
+              "value": "={{   $json.score >= 6     ? 'HIGH'     : $json.score >= 3       ? 'MEDIUM'       : 'LOW' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2448,
+        -160
+      ],
+      "id": "7c6808a2-7e4a-4821-a240-605578c0b1ff",
+      "name": "Assign Priority"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Assign Priority').item.json.priority }}",
+                    "rightValue": "LOW",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4c5e0de9-769b-4b5a-8250-ea7541a3f0d6"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LOW"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ed18da8f-3a64-4c21-bd33-19493453e16b",
+                    "leftValue": "={{ $('Assign Priority').item.json.priority }}",
+                    "rightValue": "MEDIUM",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "MEDIUM"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "40bfaeaa-fbe1-431e-8fd9-e6b84dde77d7",
+                    "leftValue": "={{ $('Assign Priority').item.json.priority }}",
+                    "rightValue": "HIGH",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "HIGH"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2000,
+        -160
+      ],
+      "id": "a611f649-d7d5-4b34-8073-a6e80c4c96cf",
+      "name": "Route Collection Priority"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3165bbd8-2d69-49ca-bd9f-5ee6427c3c55",
+              "name": "action",
+              "value": "standard-processing",
+              "type": "string"
+            },
+            {
+              "id": "29f9e7f5-f96b-44c7-9636-20d2f91b3960",
+              "name": "requiresAlert",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1760,
+        -304
+      ],
+      "id": "a47566d1-f1eb-4344-b838-4cf074df91e2",
+      "name": "Low Priority Processing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "260ab792-aed7-4343-8860-52fb69180cf1",
+              "name": "action",
+              "value": "finance-review",
+              "type": "string"
+            },
+            {
+              "id": "5f0a063a-243c-4a10-838e-b46ff019d251",
+              "name": "requiresAlert",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1760,
+        -144
+      ],
+      "id": "b100fe6e-4ff9-4320-91fd-86169d2f88e5",
+      "name": "Medium Priority Processing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc08f972-90fa-4c7a-ba76-7eef5e866289",
+              "name": "action",
+              "value": "urgent-finance-review",
+              "type": "string"
+            },
+            {
+              "id": "d229c4f2-b011-4383-bff4-50dc2feb6d5a",
+              "name": "requiresAlert",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1760,
+        16
+      ],
+      "id": "66e1bdb2-695d-4561-a942-46d9fe85989c",
+      "name": "High Priority Processing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e04fff64-796c-456a-a6e9-69aac7dca20f",
+              "name": "eventId",
+              "value": "={{ $('Create Finance Event').item.json.eventId }}",
+              "type": "string"
+            },
+            {
+              "id": "84d355e5-11e6-42d5-892a-90eee9d63b3c",
+              "name": "event",
+              "value": "invoice.processed",
+              "type": "string"
+            },
+            {
+              "id": "44d0596e-b99f-4802-9e75-0bde67e81601",
+              "name": "timestamp",
+              "value": "{{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "c7eed7ce-9344-49b4-bb52-7adaf78063f6",
+              "name": "source",
+              "value": "northstar-ar-workflow",
+              "type": "string"
+            },
+            {
+              "id": "8ac5e830-fcc7-439e-ab14-8dddce8a84af",
+              "name": "invoiceId",
+              "value": "={{ $('Create Finance Event').item.json.data.invoiceId }}",
+              "type": "string"
+            },
+            {
+              "id": "fc750f82-743f-4ff3-aee8-1b1bc5438b83",
+              "name": "customerName",
+              "value": "={{ $('Create Finance Event').item.json.data.customerName }}",
+              "type": "string"
+            },
+            {
+              "id": "782e22e1-1781-4272-a8ae-730a427f2a94",
+              "name": "amountDue",
+              "value": "={{ $('Create Finance Event').item.json.data.amountDue }}",
+              "type": "number"
+            },
+            {
+              "id": "8d012c19-a1e2-4b07-bba2-2b64b2debb9a",
+              "name": "priority",
+              "value": "={{ $json.Priority ?? $json.priority }}",
+              "type": "string"
+            },
+            {
+              "id": "afed4520-2035-48e4-aca8-d67198d9501d",
+              "name": "score",
+              "value": "={{ $json.Score ?? $json.score }}",
+              "type": "number"
+            },
+            {
+              "id": "04055a2b-178a-49b0-a0c0-780bca943984",
+              "name": "action",
+              "value": "{{ $json.action }}",
+              "type": "string"
+            },
+            {
+              "id": "6fa246c2-0404-4344-8f0a-fa8a3cae32b6",
+              "name": "requiresAlert",
+              "value": "={{ $json.requiresAlert }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -992,
+        -144
+      ],
+      "id": "4448e7b4-37f8-4589-954a-19f34eb78336",
+      "name": "Prepare Finance Delivery"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_ERROR_LOG_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Automation errors",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_ERROR_LOG_SPREADSHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Errors",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_ERROR_LOG_SPREADSHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stage": "={{ $json.stage }}",
+            "retryable": "={{ $json.retryable }}",
+            "status": "={{ $json.status }}",
+            "message": "={{ $json.message }}",
+            "success": "={{ $json.success }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "success",
+              "displayName": "success",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stage",
+              "displayName": "stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retryable",
+              "displayName": "retryable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -416,
+        640
+      ],
+      "id": "8cfba9b5-dd0b-4bf0-89f3-f5e84b71071d",
+      "name": "Log Automation Error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c7f5170-5778-4f6f-aaa9-40b656f39679",
+              "name": "success",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "eccee503-f6ac-409a-bb77-296a274971f7",
+              "name": "type",
+              "value": "validation",
+              "type": "string"
+            },
+            {
+              "id": "c0989418-c7b5-45ac-b19c-3fe0dbc99020",
+              "name": "message",
+              "value": "Lead validation failed",
+              "type": "string"
+            },
+            {
+              "id": "cb336628-a15e-4175-a67e-7f994c62c159",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3744,
+        96
+      ],
+      "id": "7c7cca5c-8eb6-4bba-af06-dd55a58c4411",
+      "name": "Reject Invalid Invoice"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_REJECTIONS_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Rejected Invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_REJECTIONS_SPREADSHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Rejections",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_REJECTIONS_SPREADSHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.toISO() }}",
+            "Invoice ID": "={{ $('Normalize Invoice').item.json.invoiceNumber }}",
+            "Customer Name": "={{ $('Normalize Invoice').item.json.company }}",
+            "Raw Amount": "={{ $('Normalize Invoice').item.json.amount }}",
+            "Raw Currency": "={{ $('Normalize Invoice').item.json.currency }}",
+            "Reason": "Invalid invoice data",
+            "Source": "invoice-webhook",
+            "Billing Email": "={{ $('Normalize Invoice').item.json.email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice ID",
+              "displayName": "Invoice ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Billing ID",
+              "displayName": "Billing ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reason",
+              "displayName": "Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Amount",
+              "displayName": "Raw Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Currency",
+              "displayName": "Raw Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3520,
+        96
+      ],
+      "id": "0ea542cc-c2a3-4c7e-9488-56dbdcf155cb",
+      "name": "Rejected Invoices"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_INVOICES_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Northstar Accounts Receivable",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_INVOICES_SPREADSHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_INVOICES_SPREADSHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Invoice ID"
+          ],
+          "schema": [
+            {
+              "id": "Invoice ID",
+              "displayName": "Invoice ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Billing Email",
+              "displayName": "Billing Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Amount Due",
+              "displayName": "Amount Due",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Terms Days",
+              "displayName": "Payment Terms Days",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Issued At",
+              "displayName": "Issued At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Due At",
+              "displayName": "Due At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Account Tier",
+              "displayName": "Account Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sales Owner",
+              "displayName": "Sales Owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Status",
+              "displayName": "Payment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Delivery Status",
+              "displayName": "Delivery Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        -320
+      ],
+      "id": "de2f3999-dd60-476f-9580-99e625c82a22",
+      "name": "Mark Invoice Delivered"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e729231-8b3a-4a12-b31a-ed6141d3dd5d",
+              "name": "Invoice ID",
+              "value": "={{ $('Create Finance Event').item.json.data.invoiceId }}",
+              "type": "string"
+            },
+            {
+              "id": "a341e4e2-a970-43d9-b8a4-e1fb51a0dbba",
+              "name": "Delivery Status",
+              "value": "Delivered",
+              "type": "string"
+            },
+            {
+              "id": "f9637a1d-f787-4244-9dca-cf5afb817909",
+              "name": "Delivered At",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -240,
+        -160
+      ],
+      "id": "11286e76-0079-4530-8ba3-897e0bc68dd4",
+      "name": "Prepare Delivery Status Update"
+    },
+    {
+      "parameters": {
+        "sendTo": "finance@example.com",
+        "subject": "= Finance Review Required — {{ invoiceId }}",
+        "message": "=Invoice: {{ invoiceId }}\nCustomer: {{ customerName }}\nAmount Due: {{ amountDue }}\nPriority: MEDIUM\nScore: {{ score }}\nSales Owner: {{ salesOwner }}\n\nAction:\nReview this invoice and confirm collection follow-up.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1536,
+        -144
+      ],
+      "id": "b0fd2ef5-4f93-4cdd-bf68-6efc5f456c53",
+      "name": "Finance Review Notification"
+    },
+    {
+      "parameters": {
+        "sendTo": "finance@example.com",
+        "subject": "=URGENT: High-Priority Invoice — {{ invoiceId }}",
+        "message": "=Body:\nHigh-priority receivable detected.\n\nInvoice: {{ invoiceId }}\nCustomer: {{ customerName }}\nAmount Due: {{ amountDue }}\nPriority: HIGH\nScore: {{ score }}\nSales Owner: {{ salesOwner }}\n\nImmediate finance review recommended.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1536,
+        16
+      ],
+      "id": "c6cf484a-845a-4514-9f73-c544a2118b44",
+      "name": "Urgent Finance Alert"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoice-created",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4160,
+        -208
+      ],
+      "id": "2a59ca05-d862-4cdc-9d21-3e5bcea6f289",
+      "name": "Receive Invoice Event"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0ac71704-32e0-42ac-a08f-fc7e2da481cc",
+              "name": "invoiceNumber",
+              "value": "={{ $json.body.invoice_number }}",
+              "type": "string"
+            },
+            {
+              "id": "1a393d4b-5738-427c-a2e0-7f0b89c2eedf",
+              "name": "company",
+              "value": "={{ $json.body.customer.company_name }}",
+              "type": "string"
+            },
+            {
+              "id": "00a50095-e24e-4615-adec-5c66005d8ed7",
+              "name": "email",
+              "value": "={{ $json.body.customer.contact_email }}",
+              "type": "string"
+            },
+            {
+              "id": "d73d6775-5323-4d0e-a42a-13db26243ede",
+              "name": "amount",
+              "value": "={{ $json.body.invoice.amount }}",
+              "type": "string"
+            },
+            {
+              "id": "547bae08-f616-4cc0-ae1f-cddb864666b0",
+              "name": "currency",
+              "value": "={{ $json.body.invoice.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "d72bb232-ee3e-4f15-a038-dae32daec714",
+              "name": "terms",
+              "value": "={{ $json.body.invoice.payment_terms }}",
+              "type": "string"
+            },
+            {
+              "id": "1d00de2b-c934-4fc9-ad49-f78f9c8740a5",
+              "name": "issued_date",
+              "value": "={{ $json.body.issued_date }}",
+              "type": "string"
+            },
+            {
+              "id": "d3981fc6-bfca-476a-b879-0078d416ff5f",
+              "name": "due_date",
+              "value": "={{ $json.body.due_date }}",
+              "type": "string"
+            },
+            {
+              "id": "8de7c41a-0183-43bd-a86e-845100396de3",
+              "name": "account_tier",
+              "value": "={{ $json.body.account_tier }}",
+              "type": "string"
+            },
+            {
+              "id": "dafedef3-37ff-4589-9001-ea6f79f02835",
+              "name": "sales_rep",
+              "value": "={{ $json.body.sales_rep }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3936,
+        -208
+      ],
+      "id": "3c2d3d96-a955-4fe5-990c-552b0b618a9c",
+      "name": "Normalize Invoice"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7c887f61-08bf-4464-933a-1a7342fdbb3d",
+              "leftValue": "={{ $json.company.trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c57447af-7593-49ff-94d7-697bbf006d4a",
+              "leftValue": "={{ $json.invoiceNumber }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "28646e5d-2bf5-475d-bd0a-a57f5d713b95",
+              "leftValue": "={{ $json.company }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "bcabda3d-4049-49ec-8cec-6046aa84f457",
+              "leftValue": "={{ /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test($json.email.trim()) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "28f88d9f-0343-4bcc-bce2-f28d2c5852c5",
+              "leftValue": "={{ Number($json.amount) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "e08e140c-17c5-4ab8-b283-5b1f3a2568f6",
+              "leftValue": "={{ [\"USD\", \"EUR\", \"PHP\"].includes($json.currency.trim()) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "02bfe6a2-7d2c-46cc-af24-483f221e0aa8",
+              "leftValue": "={{ [\"net15\", \"net30\", \"net60\"].includes($json.terms) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "b2a46ca9-e184-424d-982c-8b5cbd2fb30a",
+              "leftValue": "={{ $json.issued_date }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "1811d9fd-6ff1-46fd-8a63-0631760bd99b",
+              "leftValue": "={{ $json.due_date >= $json.issued_date }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0893f930-c6a4-41cd-90bd-166842e65860",
+              "leftValue": "={{ [\"startup\", \"business\", \"enterprise\"].includes($json.account_tier) }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3744,
+        -208
+      ],
+      "id": "e5788dec-e8b6-4508-8055-7f8869a4c673",
+      "name": "Validate Invoice"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "628fd3c0-34cf-4606-a871-ee1a85a5caf2",
+              "name": "invoiceId",
+              "value": "={{ $json.invoiceNumber.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "d0f5cd43-ff03-4972-bda5-7e84648c3c7e",
+              "name": "customerName",
+              "value": "={{ $json.company.trim().toLowerCase().toTitleCase()}}",
+              "type": "string"
+            },
+            {
+              "id": "672e2227-cdb6-43e2-b68b-a8afdb7836b9",
+              "name": "billingEmail",
+              "value": "={{ $json.email.trim().toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "455b559e-f1af-40ed-be8d-f1b51aecd5cc",
+              "name": "amountDue",
+              "value": "={{ Number($json.amount) }}",
+              "type": "string"
+            },
+            {
+              "id": "a02eb9cc-8a73-4d28-b9ac-4f2299cea00b",
+              "name": "currency",
+              "value": "={{ $json.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "62ff66f1-6c04-42e6-a33a-2ad719df65a2",
+              "name": "paymentTermsDays",
+              "value": "={{ ({\n  net15: \"15\",\n  net30: \"30\",\n  net60: \"60\"\n})[$json.terms.trim().toLowerCase()] ?? \"Other\" }}",
+              "type": "string"
+            },
+            {
+              "id": "d25841bd-aeea-4b90-92ca-06a217d92216",
+              "name": "issuedAt",
+              "value": "={{ $json.issued_date }}",
+              "type": "string"
+            },
+            {
+              "id": "422c0b8b-551b-4b81-81b6-5587fa43a0f8",
+              "name": "dueAt",
+              "value": "={{ $json.due_date }}",
+              "type": "string"
+            },
+            {
+              "id": "8f06f4fe-c51c-4459-b4a5-8d61819b706a",
+              "name": "accountTier",
+              "value": "={{ $json.account_tier }}",
+              "type": "string"
+            },
+            {
+              "id": "1f3b9b1f-3caa-4630-94ab-a2dc5785965c",
+              "name": "salesOwner",
+              "value": "={{ $json.sales_rep }}",
+              "type": "string"
+            },
+            {
+              "id": "4b1be156-909b-48cc-ab2b-16b16547acd1",
+              "name": "paymentStatus",
+              "value": "unpaid",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3456,
+        -224
+      ],
+      "id": "0d3ae8dc-62b0-45c6-984a-340bf7b86823",
+      "name": "Transform Invoice"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Succeeded?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Delivery Status Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle HTTP Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle HTTP Failure": {
+      "main": [
+        [
+          {
+            "node": "Should Retry?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Retry?": {
+      "main": [
+        [
+          {
+            "node": "Wait Before Retry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Final Delivery Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Retry Count": {
+      "main": [
+        [
+          {
+            "node": "Retry Limit Reached?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Limit Reached?": {
+      "main": [
+        [
+          {
+            "node": "Final Delivery Failure",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait Before Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Finance Event": {
+      "main": [
+        [
+          {
+            "node": "Find Existing Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice Already Exists?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Calculate Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Invoice": {
+      "main": [
+        [
+          {
+            "node": "Route Collection Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Score": {
+      "main": [
+        [
+          {
+            "node": "Assign Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Priority": {
+      "main": [
+        [
+          {
+            "node": "Store Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Collection Priority": {
+      "main": [
+        [
+          {
+            "node": "Low Priority Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Medium Priority Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "High Priority Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        []
+      ]
+    },
+    "Low Priority Processing": {
+      "main": [
+        [
+          {
+            "node": "Prepare Finance Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Medium Priority Processing": {
+      "main": [
+        [
+          {
+            "node": "Finance Review Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Priority Processing": {
+      "main": [
+        [
+          {
+            "node": "Urgent Finance Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Finance Delivery": {
+      "main": [
+        [
+          {
+            "node": "Deliver Finance Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Delivery Failure": {
+      "main": [
+        [
+          {
+            "node": "Log Automation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Invalid Invoice": {
+      "main": [
+        [
+          {
+            "node": "Rejected Invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Delivery Status Update": {
+      "main": [
+        [
+          {
+            "node": "Mark Invoice Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Invoice Event": {
+      "main": [
+        [
+          {
+            "node": "Normalize Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Invoice": {
+      "main": [
+        [
+          {
+            "node": "Validate Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Invoice": {
+      "main": [
+        [
+          {
+            "node": "Transform Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invalid Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Invoice": {
+      "main": [
+        [
+          {
+            "node": "Create Finance Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver Finance Event": {
+      "main": [
+        [
+          {
+            "node": "HTTP Succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Retry Finance Delivery": {
+      "main": [
+        [
+          {
+            "node": "Prepare Delivery Status Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing Invoice": {
+      "main": [
+        [
+          {
+            "node": "Invoice Already Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finance Review Notification": {
+      "main": [
+        [
+          {
+            "node": "Prepare Finance Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Urgent Finance Alert": {
+      "main": [
+        [
+          {
+            "node": "Prepare Finance Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Before Retry": {
+      "main": [
+        [
+          {
+            "node": "Increment Retry Count",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Retry Finance Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "bf72ee19-7eee-4291-9682-62bd28234851",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f986ed4a0d722dff3a34d682e2b7290815f9d84fa83039820bd11d1e955ed2bb"
+  },
+  "nodeGroups": [],
+  "id": "Pq7czimSjAVxpE3U",
+  "tags": []
+}
