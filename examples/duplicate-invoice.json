@@ -1,0 +1,16 @@
+{
+  "invoice_number": "INV-DEMO-DUP-001",
+  "customer": {
+    "company_name": "Atlas Distribution Co",
+    "contact_email": "billing@atlasdistribution.example"
+  },
+  "invoice": {
+    "amount": "7200.00",
+    "currency": "USD",
+    "payment_terms": "net30"
+  },
+  "issued_date": "2026-08-15",
+  "due_date": "2026-09-14",
+  "account_tier": "business",
+  "sales_rep": "Daniel Kim"
+}
