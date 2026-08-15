@@ -1,0 +1,16 @@
+{
+  "invoice_number": "INV-DEMO-HIGH-001",
+  "customer": {
+    "company_name": "Titan Industrial Holdings",
+    "contact_email": "accounts@titanindustrial.example"
+  },
+  "invoice": {
+    "amount": "65500.00",
+    "currency": "USD",
+    "payment_terms": "net60"
+  },
+  "issued_date": "2026-08-15",
+  "due_date": "2026-10-14",
+  "account_tier": "enterprise",
+  "sales_rep": "Sofia Reyes"
+}
