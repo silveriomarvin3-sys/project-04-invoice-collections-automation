@@ -1,0 +1,16 @@
+{
+  "invoice_number": "INV-DEMO-MED-001",
+  "customer": {
+    "company_name": "Summit Equipment Group",
+    "contact_email": "finance@summitequipment.example"
+  },
+  "invoice": {
+    "amount": "12500.00",
+    "currency": "USD",
+    "payment_terms": "net30"
+  },
+  "issued_date": "2026-08-15",
+  "due_date": "2026-09-14",
+  "account_tier": "business",
+  "sales_rep": "Marcus Lee"
+}
