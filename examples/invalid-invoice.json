@@ -1,0 +1,16 @@
+{
+  "invoice_number": "",
+  "customer": {
+    "company_name": "",
+    "contact_email": "not-an-email"
+  },
+  "invoice": {
+    "amount": "-500",
+    "currency": "",
+    "payment_terms": "unknown"
+  },
+  "issued_date": "2026-08-15",
+  "due_date": "",
+  "account_tier": "business",
+  "sales_rep": ""
+}
